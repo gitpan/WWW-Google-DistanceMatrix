@@ -1,0 +1,40 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.66.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 a5bf38962b47f6321ea1df475c45bc93a124a2d5 Build.PL
+SHA1 1bbdab41622045d977b3ce51fe6de70d91310dd6 Changes
+SHA1 6969541870f39377e81fd8ad4e73dc7f253f4964 MANIFEST
+SHA1 7d20e4e840781030202bb045d5ab81b3fd1b68b0 MANIFEST.SKIP
+SHA1 0f63380b5a6f198b5e45ff8f1fd5195d71fa4fb3 META.yml
+SHA1 e55ff32133d86e0442a2bedb2d718f4e161d490f Makefile.PL
+SHA1 e44bf287c7ae0734493577cf07dba124889c2bef README
+SHA1 009714e23a20303884aac81dac077aa2aa97668e lib/WWW/Google/DistanceMatrix.pm
+SHA1 9bc81749956fe4222b1d54d84bee23e1f511e047 t/00-load.t
+SHA1 7c7cf291e7e830d92c67ad65932740bcb1ef5e1b t/01-new.t
+SHA1 5b159acb6c3df8be1df11fd79b7bf72f2fda271c t/02-getDistance.t
+SHA1 2b8ffb7e4f399af95d092743846ac8d438f2c53e t/manifest.t
+SHA1 0765c9ff0cc4319f415bb08d0053b7717a8284a2 t/pod.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (MingW32)
+
+iQEcBAEBAgAGBQJONro3AAoJEPYcXBXhRYOhNCUH/0j95fLTfDwLvtKBEhd7g02f
+wN33I/w1f332sSrhL5M2R9pcU+WhAdCvBts86B3S+WeSLUrVh8nBga+BoZRCEVwV
+ENTrJFzg5D49UgJo3U5zu0styWEvu7NR7YBDmXoIZ9p+miN6ipXc0zgNNCYmqsyg
+lhkWDW2xLJOeC4VG8CW1gBGP8E9BGOEavFVPdorHtARv78gQpN51caCKMWK7Nam7
+p++E+NGZrvNwphiMiVTOyF7ZFqIJIA/k9zZr4fKF3+ReiYI6Ri//rZGM1Fv4rfqY
+E4oKvi/gdxSj7qs4th132S7HV2U+8hLRiCLZvpXqJRuNTJ/ewL067w6O43fh9bU=
+=yeZ2
+-----END PGP SIGNATURE-----
