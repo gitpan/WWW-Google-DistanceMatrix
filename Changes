@@ -1,4 +1,8 @@
 Revision history for WWW-Google-DistanceMatrix
 
+0.02    Mon Aug 08 12:48:11 2011
+        - Made Readonly v1.03 as minimum requirement.
+        - Prepared the distribution using the Module::Signature v0.68.
+
 0.01    Mon Aug 01 15:15:01 2011
         - First version, released.

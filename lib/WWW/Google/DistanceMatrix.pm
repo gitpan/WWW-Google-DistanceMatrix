@@ -17,11 +17,11 @@ WWW::Google::DistanceMatrix - Interface to Google Distance Matrix API.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 Readonly my $BASE_URL => 'http://maps.googleapis.com/maps/api/distancematrix';
 Readonly my $FORMAT   => { 'xml'     => 1, 'json'     => 1 };
 Readonly my $AVOID    => { 'tolls'   => 1, 'highways' => 1 };

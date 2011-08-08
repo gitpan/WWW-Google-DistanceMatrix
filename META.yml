@@ -7,7 +7,7 @@ build_requires:
   LWP::UserAgent: 2.33
   Mouse: 0.93
   MouseX::Params::Validate: 0.01
-  Readonly: 0
+  Readonly: 1.03
   Test::More: 0
   Test::Warn: 0
 configure_requires:
@@ -21,7 +21,7 @@ name: WWW-Google-DistanceMatrix
 provides:
   WWW::Google::DistanceMatrix:
     file: lib/WWW/Google/DistanceMatrix.pm
-    version: 0.01
+    version: 0.02
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+version: 0.02
