@@ -1,15 +1,21 @@
 package WWW::Google::DistanceMatrix;
 
-use Mouse;
-use Mouse::Util::TypeConstraints;
-use MouseX::Params::Validate;
+$WWW::Google::DistanceMatrix::VERSION = '0.03';
 
-use Carp;
-use Readonly;
+use 5.006;
+use JSON;
 use Data::Dumper;
 
-use HTTP::Request;
-use LWP::UserAgent;
+use WWW::Google::UserAgent;
+use WWW::Google::DistanceMatrix::Result;
+use WWW::Google::UserAgent::DataTypes qw($TrueOrFalse $XmlOrJson);
+use WWW::Google::DistanceMatrix::Params qw(validate $Avoid $Units $Mode $Language $FIELDS);
+
+use Moo;
+use namespace::clean;
+extends 'WWW::Google::UserAgent';
+
+our $BASE_URL = 'https://maps.googleapis.com/maps/api/distancematrix';
 
 =head1 NAME
 
@@ -17,85 +23,24 @@ WWW::Google::DistanceMatrix - Interface to Google Distance Matrix API.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
-Readonly my $BASE_URL => 'http://maps.googleapis.com/maps/api/distancematrix';
-Readonly my $FORMAT   => { 'xml'     => 1, 'json'     => 1 };
-Readonly my $AVOID    => { 'tolls'   => 1, 'highways' => 1 };
-Readonly my $UNITS    => { 'metric'  => 1, 'imperial' => 1 };
-Readonly my $SENSOR   => { 'true'    => 1, 'false'    => 1 };
-Readonly my $MODE     => { 'driving' => 1, 'walking'  => 1, 'bicycling' => 1 };
-Readonly my $LANGUAGE => 
-{
-    'ar'    => 1,
-    'eu'    => 1,
-    'bg'    => 1,
-     'bn'    => 1,
-    'ca'    => 1,
-    'cs'    => 1,
-    'da'    => 1,
-    'de'    => 1,
-    'de'    => 1,
-    'el'    => 1,
-    'en'    => 1,
-    'en-AU' => 1,
-    'en-GB' => 1,
-    'es'    => 1,
-    'eu'    => 1,
-    'fa'    => 1,
-    'fi'    => 1,
-    'fil'   => 1,
-    'fr'    => 1,
-    'gl'    => 1,
-    'gu'    => 1,
-    'hi'    => 1,
-    'hr'    => 1,
-    'hu'    => 1,
-    'id'    => 1,
-    'it'    => 1,
-    'iw'    => 1,
-    'ja'    => 1,
-    'kn'    => 1,
-    'ko'    => 1,
-    'lt'    => 1,
-    'lv'    => 1,
-    'ml'    => 1,
-    'mr'    => 1,
-    'nl'    => 1,
-    'nn'    => 1,
-    'no'    => 1,
-    'or'    => 1,
-    'pl'    => 1,
-    'pt'    => 1,
-    'pt-BR' => 1,
-    'pt-PT' => 1,
-    'rm'    => 1,
-    'ro'    => 1,
-    'ru'    => 1,
-    'sk'    => 1,
-    'sl'    => 1,
-    'sr'    => 1,
-    'sv'    => 1,
-    'tl'    => 1,
-    'ta'    => 1,
-    'te'    => 1,
-    'th'    => 1,
-    'tr'    => 1,
-    'uk'    => 1,
-    'vi'    => 1,
-    'zh-CN' => 1,
-    'zh-TW' => 1,
-};
+has avoid    => (is => 'ro', isa => $Avoid);
+has sensor   => (is => 'ro', isa => $TrueOrFalse, default  => sub { return 'false'   });
+has unit     => (is => 'ro', isa => $Units,       default  => sub { return 'metric'  });
+has mode     => (is => 'ro', isa => $Mode,        default  => sub { return 'driving' });
+has language => (is => 'ro', isa => $Language,    default  => sub { return 'en'      });
+has output   => (is => 'ro', isa => $XmlOrJson,   default  => sub { return 'json'    });
 
 =head1 DESCRIPTION
 
-The Google Distance Matrix API  is a service that provides travel distance & time for a matrix
-of origins and destinations.The information returned is based on the recommended route between 
-start & end points as calculated by the Google Maps API & consists of rows containing duration 
-and distance values for each pair. The Distance Matrix API has the following limits in place:
+The Google Distance Matrix API  is a service that provides travel distance & time
+for a matrix of origins and destinations.The information returned is based on the
+recommended route between start & end points as calculated by the Google Maps API
+&  consists  of  rows  containing duration and distance values for each pair. The
+Distance Matrix API has the following limits in place:
 
 =over 3
 
@@ -109,46 +54,11 @@ and distance values for each pair. The Distance Matrix API has the following lim
 
 =head1 NOTE
 
-Use of the Distance Matrix API must relate to the display of information on a Google Map;  for
-example to determine origin-destination pairs that fall within  specific driving time from one 
-another before requesting and displaying those destinations on a map. Use of the service in an
-application that doesn't display a Google map is prohibited.
-
-=cut
-subtype 'Address'
-    => as 'Str';
-subtype 'ArrayRefOfAddress'
-    => as 'ArrayRef[Address]';
-coerce 'ArrayRefOfAddress'
-    => from 'Address'
-    => via { [ $_ ] }
-    => from 'ArrayRef[Str]'
-    => via { [ map { $_ } @$_ ] };
-    
-subtype 'LatLng' 
-    => as 'Str'
-    => where { _validateLatLng($_) };
-subtype 'ArrayRefOfLatLng'
-    => as 'ArrayRef[LatLng]';
-coerce 'ArrayRefOfLatLng'
-    => from 'LatLng'
-    => via { [ $_ ] }
-    => from 'ArrayRef[Str]'
-    => via { [ map { _coerceStrToLatLng($_) } @$_ ] };
-
-type 'Format'   => where { exists $FORMAT->{lc($_)}   };
-type 'Language' => where { exists $LANGUAGE->{lc($_)} };
-type 'Mode'     => where { exists $MODE->{lc($_)}     };
-type 'Avoid'    => where { exists $AVOID->{lc($_)}    };
-type 'Units'    => where { exists $UNITS->{lc($_)}    };
-type 'Sensor'   => where { exists $SENSOR->{lc($_)}   };
-has  'avoid'    => (is => 'ro', isa => 'Avoid',          required => 0);
-has  'sensor'   => (is => 'ro', isa => 'Sensor',         default  => 'false');
-has  'unit'     => (is => 'ro', isa => 'Units',          default  => 'metric');
-has  'mode'     => (is => 'ro', isa => 'Mode',           default  => 'driving');
-has  'language' => (is => 'ro', isa => 'Language',       default  => 'en');
-has  'output'   => (is => 'ro', isa => 'Format',         default  => 'json');
-has  'browser'  => (is => 'rw', isa => 'LWP::UserAgent', default  => sub { return LWP::UserAgent->new(agent => 'Mozilla/5.0'); });
+Use  of  the  Distance  Matrix API must relate to the display of information on a
+Google Map;  for  example  to determine origin-destination pairs that fall within
+specific  driving  time  from  one another before requesting and displaying those
+destinations on a map.Use of the service in an application that doesn't display a
+Google map is prohibited.
 
 =head1 CONSTRUCTOR
 
@@ -161,13 +71,13 @@ The following list of optional parameters can be passed in to the constructor.
     |              |          | directions. Valid values are 'driving', 'walking' and        |
     |              |          | 'bicycling'. Default value is 'driving'.                     |
     | language     | No       | The language in which to return results. Default is 'en'.    |
-    | avoid        | No       | Introduces restrictions to the route. Valid values: 'tolls'  |   
+    | avoid        | No       | Introduces restrictions to the route. Valid values: 'tolls'  |
     |              |          | and 'highways'. Only one restriction can be specified.       |
     | units        | No       | Specifies the unit system to use when expressing distance as |
     |              |          | text. Valid values: 'metric' (default) and 'imperial'.       |
     | sensor       | No       | Indicates whether your application is using a sensor (such as|
     |              |          | a GPS locator) to determine the user's location. This value  |
-    |              |          | must be either 'true' or 'false'. Default is 'false'.        | 
+    |              |          | must be either 'true' or 'false'. Default is 'false'.        |
     +--------------+----------+--------------------------------------------------------------+
 
 =head1 SUPPORTED LANGUAGES
@@ -242,96 +152,113 @@ The following list of optional parameters can be passed in to the constructor.
 Returns the distance matrix in the desired output format (json/xml) from the set of origins to
 the set of destinations. Following parameters can be passed in:
 
-    +----------+----------+--------------------------------------------------------------+
-    | key      | Description                                                             |
-    +----------+----------+--------------------------------------------------------------+
-    | o_addr   | One or more origin address(es).                                         |
-    | o_latlng | One or more origin latitude/longitude coordinate(s).                    |
-    | d_addr   | One or more destination address(es).                                    |
-    | d_latlng | One or more destination latitude/longitude coordinate(s).               |
-    +----------+----------+--------------------------------------------------------------+
+    +----------+----------+------------------------------------------------+
+    | key      | Description                                               |
+    +----------+----------+------------------------------------------------+
+    | o_addr   | One or more origin address(es).                           |
+    | o_latlng | One or more origin latitude/longitude coordinate(s).      |
+    | d_addr   | One or more destination address(es).                      |
+    | d_latlng | One or more destination latitude/longitude coordinate(s). |
+    +----------+----------+------------------------------------------------+
 
 If you pass coordinates ensure that no space exists between the latitude/longitude values.
 
-    use strict; use warnings;
-    use WWW::Google::DistanceMatrix;
+   use strict; use warnings;
+   use WWW::Google::DistanceMatrix;
 
-    my $google = WWW::Google::DistanceMatrix->new();
-    print $google->getDistance(o_addr => 'Bobcaygeon+ON',
-                               d_addr => 'Darling+Harbour+NSW+Australia');
-                               
-    print $google->getDistance(o_addr => '41.43206,-81.38992',
-                               d_addr => 'Darling+Harbour+NSW+Australia');
-                           
-    print $google->getDistance(o_addr => ['Vancouver+BC', 'Seattle'],
-                               d_addr => ['San+Francisco', 'Victoria+BC']);                                                          
+   my $api_key = 'Your API Key';
+   my $google  = WWW::Google::DistanceMatrix->new( 'api_key' => $api_key );
+   my $results = $google->getDistance({ o_addr => ['Vancouver+BC'], d_addr => ['Victoria+BC'] });
+   foreach my $result (@$results) {
+       print $result->as_string, "\n";
+   }
 
 =cut
 
-sub getDistance
-{
-    my $self = shift;
-    my %param = validated_hash(\@_,
-                'o_addr'   => { isa => 'ArrayRefOfAddress', coerce => 1, optional => 1 },
-                'd_addr'   => { isa => 'ArrayRefOfAddress', coerce => 1, optional => 1 },
-                'o_latlng' => { isa => 'ArrayRefOfLatLng',  coerce => 1, optional => 1 },
-                'd_latlng' => { isa => 'ArrayRefOfLatLng',  coerce => 1, optional => 1 },
-                MX_PARAMS_VALIDATE_NO_CACHE => 1);
-                
-    croak("Missing origins information.\n") 
-        unless (exists($param{'o_addr'}) || exists($param{'o_latlng'}));
-    croak("Missing destinations information.\n") 
-        unless (exists($param{'d_addr'}) || exists($param{'d_latlng'}));
-        
+sub getDistance {
+    my ($self, $params) = @_;
+
+    my $url      = $self->_url($params);
+    my $response = $self->get($url);
+    my $contents = from_json($response->{content});
+
+    return _result($contents);
+}
+
+#
+# PRIVATE METHODS
+#
+
+sub _url {
+    my ($self, $params) = @_;
+
     my ($origins, $destinations);
-    my ($browser, $url, $request, $response, $content);
-    
-    map { push @{$origins}, $_ } @{$param{'o_addr'}}   if defined $param{'o_addr'};
-    map { push @{$origins}, $_ } @{$param{'o_latlng'}} if defined $param{'o_latlng'};
-    map { push @{$destinations}, $_ } @{$param{'d_addr'}}   if defined $param{'d_addr'};
-    map { push @{$destinations}, $_ } @{$param{'d_latlng'}} if defined $param{'d_latlng'};
-    
-    $browser = $self->browser;
-    $browser->env_proxy;
-    $url = sprintf("%s/%s", $BASE_URL, $self->output);
-    $url.= sprintf("?origins=%s", join("|", @{$origins}));
-    $url.= sprintf("&destinations=%s", join("|", @{$destinations}));
-    $url.= sprintf("&sensor=%s", $self->sensor);
-    $url.= sprintf("&avoid=%s", $self->avoid) if $self->avoid;
-    $url.= sprintf("&unit=%s", $self->unit);
-    $url.= sprintf("&mode=%s", $self->mode);
-    $url.= sprintf("&language=%s", $self->language);
-    
-    $request  = HTTP::Request->new(GET => $url);
-    $response = $browser->request($request);
-    croak("ERROR: Couldn't fetch data [$url]:[".$response->status_line."]\n")
-        unless $response->is_success;
-    $content  = $response->content;
-    croak("ERROR: No data found.\n") unless defined $content;
-    return $content;        
+    if (defined $params) {
+        foreach ('o_addr', 'o_latlng') {
+            if (defined $params->{$_}) {
+                $FIELDS->{$_}->{check}->($params->{$_});
+                push @$origins, @{$params->{$_}};
+            }
+        }
+
+        foreach ('d_addr', 'd_latlng') {
+            if (defined $params->{$_}) {
+                $FIELDS->{$_}->{check}->($params->{$_});
+                push @$destinations, @{$params->{$_}};
+            }
+        }
+    }
+
+    validate({ origins => 1, destinations => 1 },
+             { origins => $origins, destinations => $destinations });
+
+    my $keys = [];
+    foreach (qw(sensor avoid units mode language)) {
+        if (defined $self->{$_}) {
+            my $_key = "$_=%" . $FIELDS->{$_}->{type};
+            push @$keys, sprintf($_key, $self->{$_});
+        }
+    }
+
+    my $url = sprintf("%s/%s?key=%s&%s",
+                      $BASE_URL, $self->output, $self->api_key, join("&", @$keys));
+    $url .= sprintf("&origins=%s", join("|", @{$origins}));
+    $url .= sprintf("&destinations=%s", join("|", @{$destinations}));
+
+    return $url;
 }
 
-sub _validateLatLng
-{
-    my $location = shift;
-    my ($lat, $lng);
-    return 0 unless ( defined($location)
-                      &&
-                      ($location =~ /\,/)
-                      &&
-                      ((($lat, $lng) = split/\,/,$location,2)
-                       &&
-                       (($lat =~ /^\-?\d+\.?\d+$/)
-                        &&
-                        ($lng =~ /^\-?\d+\.?\d+$/))));
-    return 1;                        
-}
+sub _result {
+    my ($data) = @_;
 
-sub _coerceStrToLatLng
-{
-    my $data = shift;
-    return $data if _validateLatLng($data);
-    warn("ERROR: Invalid Latitude/Longitude [$data].");
+    my $results = [];
+    my $o_index = 0;
+    foreach my $origin (@{$data->{origin_addresses}}) {
+        my $d_index = 0;
+        foreach my $destination (@{$data->{destination_addresses}}) {
+            my ($duration, $distance);
+            if ($data->{rows}->[$o_index]->{elements}->[$d_index]->{status} eq 'OK') {
+                $duration = $data->{rows}->[$o_index]->{elements}->[$d_index]->{duration}->{text};
+                $distance = $data->{rows}->[$o_index]->{elements}->[$d_index]->{distance}->{text};
+            }
+            else {
+                $duration = 'N/A';
+                $distance = 'N/A';
+            }
+
+            push @$results,
+            WWW::Google::DistanceMatrix::Result->new(
+                origin      => $origin,
+                destination => $destination,
+                duration    => $duration,
+                distance    => $distance);
+
+            $d_index++;
+        }
+        $o_index++;
+    }
+
+    return $results;
 }
 
 =head1 AUTHOR
@@ -340,10 +267,10 @@ Mohammad S Anwar, C<< <mohammad.anwar at yahoo.com> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-www-google-distancematrix at rt.cpan.org>,
-or through the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WWW-Google-DistanceMatrix>.
-I will be notified and then you'll automatically be notified of progress on your bug as I make 
-changes.
+Please  report any bugs or feature requests to C<bug-www-google-distancematrix at
+rt.cpan.org>, or through the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WWW-Google-DistanceMatrix>.
+I will be notified, and then you'll automatically be notified of progress on your
+bug as I make changes.
 
 =head1 SUPPORT
 
@@ -355,7 +282,7 @@ You can also look for information at:
 
 =over 4
 
-=item * RT: CPAN's request tracker
+=item * RT: CPAN's request tracker (report bugs here)
 
 L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=WWW-Google-DistanceMatrix>
 
@@ -375,21 +302,42 @@ L<http://search.cpan.org/dist/WWW-Google-DistanceMatrix/>
 
 =head1 LICENSE AND COPYRIGHT
 
-This  program  is  free  software; you can redistribute it and/or modify it under the terms of
-either:  the  GNU  General Public License as published by the Free Software Foundation; or the
-Artistic License.
+Copyright 2014 Mohammad S Anwar.
 
-See http://dev.perl.org/licenses/ for more information.
+This  program  is  free software; you can redistribute it and/or modify it under
+the  terms  of the the Artistic License (2.0). You may obtain a copy of the full
+license at:
 
-=head1 DISCLAIMER
+L<http://www.perlfoundation.org/artistic_license_2_0>
 
-This  program  is  distributed in the hope that it will be useful,  but  WITHOUT ANY WARRANTY;
-without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Any  use,  modification, and distribution of the Standard or Modified Versions is
+governed by this Artistic License.By using, modifying or distributing the Package,
+you accept this license. Do not use, modify, or distribute the Package, if you do
+not accept this license.
+
+If your Modified Version has been derived from a Modified Version made by someone
+other than you,you are nevertheless required to ensure that your Modified Version
+ complies with the requirements of this license.
+
+This  license  does  not grant you the right to use any trademark,  service mark,
+tradename, or logo of the Copyright Holder.
+
+This license includes the non-exclusive, worldwide, free-of-charge patent license
+to make,  have made, use,  offer to sell, sell, import and otherwise transfer the
+Package with respect to any patent claims licensable by the Copyright Holder that
+are  necessarily  infringed  by  the  Package. If you institute patent litigation
+(including  a  cross-claim  or  counterclaim) against any party alleging that the
+Package constitutes direct or contributory patent infringement,then this Artistic
+License to you shall terminate on the date that such litigation is filed.
+
+Disclaimer  of  Warranty:  THE  PACKAGE  IS  PROVIDED BY THE COPYRIGHT HOLDER AND
+CONTRIBUTORS  "AS IS'  AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES. THE IMPLIED
+WARRANTIES    OF   MERCHANTABILITY,   FITNESS   FOR   A   PARTICULAR  PURPOSE, OR
+NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY YOUR LOCAL LAW. UNLESS
+REQUIRED BY LAW, NO COPYRIGHT HOLDER OR CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL,  OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE
+OF THE PACKAGE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =cut
-
-__PACKAGE__->meta->make_immutable;
-no Mouse; # Keywords are removed from the WWW::Google::DistanceMatrix package
-no Mouse::Util::TypeConstraints;
 
 1; # End of WWW::Google::DistanceMatrix

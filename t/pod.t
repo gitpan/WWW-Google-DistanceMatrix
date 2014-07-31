@@ -1,6 +1,7 @@
-#!perl
-
-use strict;use warnings;
+#!perl -T
+use 5.006;
+use strict;
+use warnings FATAL => 'all';
 use Test::More;
 
 # Ensure a recent version of Test::Pod

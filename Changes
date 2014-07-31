@@ -1,5 +1,9 @@
 Revision history for WWW-Google-DistanceMatrix
 
+0.03    Fri Aug 01 00:45:00 2014
+        - Re-structured the code using 'Moo'
+        - Returns the result in object format.
+
 0.02    Mon Aug 08 12:48:11 2011
         - Made Readonly v1.03 as minimum requirement.
         - Prepared the distribution using the Module::Signature v0.68.
