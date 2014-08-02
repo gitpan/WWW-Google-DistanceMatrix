@@ -23,4 +23,4 @@ requires:
   WWW::Google::UserAgent: '0.07'
   namespace::clean: '0'
   perl: '5.006'
-version: '0.04'
+version: '0.05'

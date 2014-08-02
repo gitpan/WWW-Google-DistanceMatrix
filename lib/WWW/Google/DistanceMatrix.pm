@@ -1,6 +1,6 @@
 package WWW::Google::DistanceMatrix;
 
-$WWW::Google::DistanceMatrix::VERSION = '0.04';
+$WWW::Google::DistanceMatrix::VERSION = '0.05';
 
 use 5.006;
 use JSON;
@@ -23,7 +23,7 @@ WWW::Google::DistanceMatrix - Interface to Google Distance Matrix API.
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =cut
 
@@ -152,14 +152,14 @@ The following list of optional parameters can be passed in to the constructor.
 Returns the distance matrix in the desired output format (json/xml) from the set of origins to
 the set of destinations. Following parameters can be passed in:
 
-    +----------+----------+------------------------------------------------+
+    +----------+-----------------------------------------------------------+
     | key      | Description                                               |
-    +----------+----------+------------------------------------------------+
+    +----------+-----------------------------------------------------------+
     | o_addr   | One or more origin address(es).                           |
     | o_latlng | One or more origin latitude/longitude coordinate(s).      |
     | d_addr   | One or more destination address(es).                      |
     | d_latlng | One or more destination latitude/longitude coordinate(s). |
-    +----------+----------+------------------------------------------------+
+    +----------+-----------------------------------------------------------+
 
 If you pass coordinates ensure that no space exists between the latitude/longitude values.
 
@@ -311,7 +311,7 @@ L<http://search.cpan.org/dist/WWW-Google-DistanceMatrix/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2014 Mohammad S Anwar.
+Copyright 2011 - 2014 Mohammad S Anwar.
 
 This  program  is  free software; you can redistribute it and/or modify it under
 the  terms  of the the Artistic License (2.0). You may obtain a copy of the full
