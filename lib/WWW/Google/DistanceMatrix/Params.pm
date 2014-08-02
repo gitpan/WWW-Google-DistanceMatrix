@@ -1,6 +1,6 @@
 package WWW::Google::DistanceMatrix::Params;
 
-$WWW::Google::DistanceMatrix::Params::VERSION = '0.03';
+$WWW::Google::DistanceMatrix::Params::VERSION = '0.04';
 
 use 5.006;
 use strict; use warnings;
@@ -18,7 +18,7 @@ WWW::Google::DistanceMatrix::Params - Placeholder for parameters for WWW::Google
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
@@ -54,10 +54,10 @@ sub check_avoid { return exists $AVOID->{lc($_[0])}; }
 our $Units = sub {
     my ($str) = @_;
 
-    die "ERROR: Invalid data type 'unit' found [$str]" unless check_unit($str);
+    die "ERROR: Invalid data type 'units' found [$str]" unless check_units($str);
 };
 
-sub check_unit { return exists $UNITS->{lc($_[0])}; }
+sub check_units { return exists $UNITS->{lc($_[0])}; }
 
 our $Mode = sub {
     my ($str) = @_;
@@ -97,7 +97,7 @@ our $FIELDS = {
     'destinations' => { check => sub { check_str(@_)     }, type => 's' },
     'sensor'       => { check => sub { check_str(@_)     }, type => 's' },
     'avoid'        => { check => sub { check_str(@_)     }, type => 's' },
-    'units'        => { check => sub { check_str(@_)     }, type => 's' },
+    'units'        => { check => sub { check_units(@_)   }, type => 's' },
     'mode'         => { check => sub { check_str(@_)     }, type => 's' },
     'language'     => { check => sub { check_str(@_)     }, type => 's' },
 };
@@ -113,11 +113,11 @@ sub validate {
         die "ERROR: Received invalid param: $field"
             unless (exists $FIELDS->{$field});
 
-        die "ERROR: Missing mandatory param: $field"
-            if ($fields->{$field} && !exists $values->{$field});
-
         die "ERROR: Received undefined mandatory param: $field"
             if ($fields->{$field} && !defined $values->{$field});
+
+        die "ERROR: Missing mandatory param: $field"
+            if ($fields->{$field} && !scalar(@{$values->{$field}}));
 
 	$FIELDS->{$field}->{check}->($values->{$field})
             if defined $values->{$field};

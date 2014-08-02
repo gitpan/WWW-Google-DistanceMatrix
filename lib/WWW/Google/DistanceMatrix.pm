@@ -1,6 +1,6 @@
 package WWW::Google::DistanceMatrix;
 
-$WWW::Google::DistanceMatrix::VERSION = '0.03';
+$WWW::Google::DistanceMatrix::VERSION = '0.04';
 
 use 5.006;
 use JSON;
@@ -23,13 +23,13 @@ WWW::Google::DistanceMatrix - Interface to Google Distance Matrix API.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
 has avoid    => (is => 'ro', isa => $Avoid);
 has sensor   => (is => 'ro', isa => $TrueOrFalse, default  => sub { return 'false'   });
-has unit     => (is => 'ro', isa => $Units,       default  => sub { return 'metric'  });
+has units    => (is => 'ro', isa => $Units,       default  => sub { return 'metric'  });
 has mode     => (is => 'ro', isa => $Mode,        default  => sub { return 'driving' });
 has language => (is => 'ro', isa => $Language,    default  => sub { return 'en'      });
 has output   => (is => 'ro', isa => $XmlOrJson,   default  => sub { return 'json'    });
@@ -192,21 +192,30 @@ sub getDistance {
 sub _url {
     my ($self, $params) = @_;
 
-    my ($origins, $destinations);
-    if (defined $params) {
-        foreach ('o_addr', 'o_latlng') {
-            if (defined $params->{$_}) {
-                $FIELDS->{$_}->{check}->($params->{$_});
-                push @$origins, @{$params->{$_}};
-            }
+    my ($origins, $destinations) = ([], []);
+    if (defined $params && ref($params) eq 'HASH') {
+        if (defined $params->{'o_addr'} && (ref($params->{'o_addr'}) eq 'ARRAY')) {
+            $FIELDS->{'o_addr'}->{check}->($params->{'o_addr'});
+            push @$origins, @{$params->{'o_addr'}};
         }
+        if (defined $params->{'o_latlng'} && (ref($params->{'o_latlng'}) eq 'ARRAY')) {
+            $FIELDS->{'o_latlng'}->{check}->($params->{'o_latlng'});
+            push @$origins, @{$params->{'o_latlng'}};
+        }
+        die "ERROR: Missing mandatory param: origins" unless scalar(@$origins);;
 
-        foreach ('d_addr', 'd_latlng') {
-            if (defined $params->{$_}) {
-                $FIELDS->{$_}->{check}->($params->{$_});
-                push @$destinations, @{$params->{$_}};
-            }
+        if (defined $params->{'d_addr'} && (ref($params->{'d_addr'}) eq 'ARRAY')) {
+            $FIELDS->{'d_addr'}->{check}->($params->{'d_addr'});
+            push @$destinations, @{$params->{'d_addr'}};
         }
+        if (defined $params->{'d_latlng'} && (ref($params->{'d_latlng'}) eq 'ARRAY')) {
+            $FIELDS->{'d_latlng'}->{check}->($params->{'d_latlng'});
+            push @$destinations, @{$params->{'d_latlng'}};
+        }
+        die "ERROR: Missing mandatory param: destinations" unless scalar(@$destinations);;
+    }
+    else {
+        die "ERROR: Missing mandatory params: origins/destinations";
     }
 
     validate({ origins => 1, destinations => 1 },

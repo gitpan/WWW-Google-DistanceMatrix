@@ -8,6 +8,8 @@ MANIFEST.SKIP
 SIGNATURE
 README
 t/00-load.t
+t/01-new.t
+t/02-getDistance.t
 t/manifest.t
 t/pod.t
 META.yml                                 Module YAML meta-data (added by MakeMaker)

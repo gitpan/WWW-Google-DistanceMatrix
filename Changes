@@ -1,5 +1,8 @@
 Revision history for WWW-Google-DistanceMatrix
 
+0.04    Sat Aug 02 02:38:03 2014
+        - Added missing unit test.
+
 0.03    Fri Aug 01 00:45:00 2014
         - Re-structured the code using 'Moo'
         - Returns the result in object format.
