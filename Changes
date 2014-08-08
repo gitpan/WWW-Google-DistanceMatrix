@@ -1,5 +1,8 @@
 Revision history for WWW-Google-DistanceMatrix
 
+0.06    Sat Aug 09 00:17:15 2014
+        - Tidied up README file.
+
 0.05    Sat Aug 02 03:58:19 2014
         - Minor changes to the pod document.
         - Updated COPYRIGHT year details.

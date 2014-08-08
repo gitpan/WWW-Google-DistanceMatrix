@@ -1,6 +1,6 @@
 package WWW::Google::DistanceMatrix;
 
-$WWW::Google::DistanceMatrix::VERSION = '0.05';
+$WWW::Google::DistanceMatrix::VERSION = '0.06';
 
 use 5.006;
 use JSON;
@@ -23,7 +23,7 @@ WWW::Google::DistanceMatrix - Interface to Google Distance Matrix API.
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =cut
 

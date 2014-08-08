@@ -1,6 +1,6 @@
 package WWW::Google::DistanceMatrix::Result;
 
-$WWW::Google::DistanceMatrix::Result::VERSION = '0.05';
+$WWW::Google::DistanceMatrix::Result::VERSION = '0.06';
 
 use 5.006;
 use overload q{""} => 'as_string', fallback => 1;
@@ -14,7 +14,7 @@ WWW::Google::DistanceMatrix::Result - Placeholder for the result of L<WWW::Googl
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =cut
 

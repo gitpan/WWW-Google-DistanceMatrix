@@ -1,6 +1,6 @@
 package WWW::Google::DistanceMatrix::Params;
 
-$WWW::Google::DistanceMatrix::Params::VERSION = '0.05';
+$WWW::Google::DistanceMatrix::Params::VERSION = '0.06';
 
 use 5.006;
 use strict; use warnings;
@@ -18,7 +18,7 @@ WWW::Google::DistanceMatrix::Params - Placeholder for parameters for WWW::Google
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =cut
 
