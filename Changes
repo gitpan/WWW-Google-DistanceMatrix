@@ -1,5 +1,9 @@
 Revision history for WWW-Google-DistanceMatrix
 
+0.07    Fri Aug 29 10:27:11 2014
+        - Added secction "REPOSITORY" to the pod
+        - Added key "META_MERGE" to Makefile.PL
+
 0.06    Sat Aug 09 00:17:15 2014
         - Tidied up README file.
 
